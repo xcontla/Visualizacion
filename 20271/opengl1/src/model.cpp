@@ -1,9 +1,10 @@
 #include "../header/model.h"
-
+#include <cmath>
+#include <iostream>
 
     Model::Model()
     {
-
+/*
         vertices[0]  =-0.5f; vertices[1]  = -0.5f; vertices[2]  =  0.0f; vertices[3]  = 0.0f; vertices[4]  = 0.0f;// v0
         vertices[5]  = 0.5f; vertices[6]  = -0.5f; vertices[7]  =  0.0f; vertices[8]  = 0.5f; vertices[9]  = 0.0f;// v1
         vertices[10] = 0.5f; vertices[11] =  0.5f; vertices[12] =  0.0f; vertices[13] = 0.5f; vertices[14] = 1.0f;// v2
@@ -23,6 +24,55 @@
         
         indices[12] = 6;indices[13] = 0;indices[14] = 3;
         indices[15] = 6;indices[16] = 3;indices[17] = 7; // Cara 3
+    
+    */
+        }
+
+    Model::Model(GLuint ancho, GLuint alto)
+    {
+        // reserve() solo aparta memoria; el tamaño sigue en 0 y push_back llena desde el inicio.
+        // La malla tiene (ancho+1) x (alto+1) vértices.
+        vertices.clear();
+        indices.clear();
+        vertices.reserve((ancho + 1) * (alto + 1) * 5);
+        indices.reserve((ancho + 1) * (alto + 1));
+
+
+        GLfloat x,y,z,u,v;
+        GLfloat min_x = -2.0f, max_x = 2.0f, 
+                min_z = -2.0f, max_z = 2.0f;
+
+        GLuint index = 0; 
+        for(GLuint i = 0; i < ancho + 1; i++){
+            for(GLuint j = 0; j < alto + 1; j++){
+
+                GLfloat delta_x = (max_x - min_x) / (GLfloat)ancho;
+                GLfloat delta_z = (max_z - min_z) / (GLfloat)alto;
+                
+                x = min_x + i * delta_x;
+                vertices.push_back(x);
+
+                y = 0.0;
+                vertices.push_back(y);
+
+                z = min_z + j * delta_z;
+                vertices.push_back(z);
+
+                u = 0.0;
+                vertices.push_back(u);
+                v = 0.0;
+                vertices.push_back(v);
+                
+                indices.push_back(index);
+
+                index = index + 1;
+
+                std::cout << "(" << x << "," << y << "," << z <<") - v" << index << std::endl;
+            }
+        }
+
+
+        std::cout << vertices.size() << " - " << indices.size() << std::endl;
     }
 
 
@@ -40,10 +90,10 @@
     glBindVertexArray(VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*  vertices.size(), &vertices[0], GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * indices.size(), &indices[0], GL_STATIC_DRAW);
 
     // Especificar el layout del vertex shader
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
@@ -56,7 +106,7 @@
 
     void Model::updateModel(float timeValue){
         angle = timeValue * glm::radians(5.0f); // 0.5 grados por segundo
-        modelmat = glm::mat4(1.0f);
+        modelmat =  glm::rotate(glm::mat4(1.0f), 0.0f ,glm::vec3(0.0,0.0,1.0f)); ;
     }
 
     void Model::renderModel(glm::mat4 view, glm::mat4 projection){
@@ -70,7 +120,8 @@
         
         // Dibujar el cubo
         glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, 18, GL_UNSIGNED_INT, 0);
+        glPointSize(4.0f);
+        glDrawElements(GL_POINTS, indices.size(), GL_UNSIGNED_INT, 0);
 
     }
     void Model::finish(){
@@ -78,7 +129,9 @@
         
         shader->terminate();
         delete(shader);
-    
+        
+
+
         glDeleteVertexArrays(1, &VAO);
         glDeleteBuffers(1, &VBO);
         glDeleteBuffers(1, &EBO);
