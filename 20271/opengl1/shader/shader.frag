@@ -13,7 +13,7 @@ void main()
         float x1 = 2.0 * x - 1.0;
         float y1 = 2.0 * y - 1.0;
         
-        vec3 col = vec3(1.0,0.0,0.0);
+        vec3 col = vec3(x,y,0.0);
    
    FragColor = vec4(col, 1.0);
 }

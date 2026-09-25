@@ -9,7 +9,6 @@ void finish(){
     glfwTerminate();
     delete(model);
     delete(ventana);
-    
 }
 
 void init(){

@@ -10,8 +10,8 @@ class Model{
 public:
 
     Shader* shader;
-    GLfloat vertices[20];
-    GLuint indices[6];
+    GLfloat vertices[40];
+    GLuint indices[18];
     float angle;
     glm::mat4 modelmat;
     GLuint VAO, VBO, EBO;
