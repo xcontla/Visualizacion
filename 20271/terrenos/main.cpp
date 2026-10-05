@@ -18,7 +18,7 @@ void init(){
     // Inicializar GLEW
     ventana->initGLEW();
     
-    model = new Model(100,100);
+    model = new Model(1000,1000);
     ventana->initModels(model);
     ventana->initViewProyection();
 

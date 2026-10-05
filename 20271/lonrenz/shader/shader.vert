@@ -10,8 +10,8 @@ void main()
 {
     coordTex = tex;
 
-    vec3 pos = position;
-    pos.y = exp(- (position.x*position.x) - (position.z * position.z));
+    vec3 pos = position.xyz;
+    //pos.y = exp(- (position.x*position.x) - (position.z * position.z));
 
     vertpos = (model * vec4(pos, 1.0)).xyz;
     gl_Position = projection * view * model * vec4(pos, 1.0);

@@ -39,8 +39,8 @@
 
 
         GLfloat x,y,z,u,v;
-        GLfloat min_x = -2.0f, max_x = 2.0f, 
-                min_z = -2.0f, max_z = 2.0f;
+        GLfloat min_x = -10.0f, max_x = 10.0f, 
+                min_z = -10.0f, max_z = 10.0f;
 
         GLuint index = 0; 
         for(GLuint i = 0; i < ancho + 1; i++){
@@ -67,7 +67,7 @@
 
                 index = index + 1;
 
-                std::cout << "(" << x << "," << y << "," << z <<") - v" << index << std::endl;
+              //  std::cout << "(" << x << "," << y << "," << z <<") - v" << index << std::endl;
             }
         }
 
