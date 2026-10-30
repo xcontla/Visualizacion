@@ -1,0 +1,52 @@
+#version 430
+
+// Un hilo por flecha
+layout(local_size_x = 16, local_size_y = 16) in;
+
+layout(r32f, binding = 0) uniform readonly image2D campo;           // campo escalar
+layout(std430, binding = 1) writeonly buffer Flechas { vec4 v[]; }; // vértices de salida
+
+uniform ivec2 rejilla;   // número de flechas en x, y
+uniform float escala;    // convierte magnitud del gradiente a longitud en pantalla
+uniform float largoMax;  // longitud máxima de una flecha
+
+float f(ivec2 p) {
+    ivec2 tam = imageSize(campo);
+    return imageLoad(campo, clamp(p, ivec2(0), tam - 1)).r;
+}
+
+void main() {
+    ivec2 id = ivec2(gl_GlobalInvocationID.xy);
+    if (id.x >= rejilla.x || id.y >= rejilla.y) return;
+
+    ivec2 tam = imageSize(campo);
+    vec2  uv  = (vec2(id) + 0.5) / vec2(rejilla);   // centro de la celda en [0,1]
+    ivec2 pix = ivec2(uv * vec2(tam));
+
+    // Gradiente por diferencias centrales. Un texel mide 2/tam en el dominio [-1,1],
+    // y la diferencia central abarca 2 texeles  ->  divisor = 4/tam
+    vec2 grad = vec2(f(pix + ivec2(1, 0)) - f(pix - ivec2(1, 0)),
+                     f(pix + ivec2(0, 1)) - f(pix - ivec2(0, 1))) * vec2(tam) / 4.0;
+
+    // Prueba: el vector perpendicular da un campo que "rodea" las montañas
+    // grad = vec2(-grad.y, grad.x);
+
+    float mag = length(grad);
+
+    // Vector que se dibuja (longitud limitada para que no se encimen)
+    vec2 d = grad * escala;
+    float L = length(d);
+    if (L > largoMax) d *= largoMax / L;
+
+    // Flecha: cuerpo + dos líneas de la punta
+    vec2 p0   = uv * 2.0 - 1.0;
+    vec2 p1   = p0 + d;
+    vec2 perp = vec2(-d.y, d.x);
+    vec2 a1   = p1 - 0.35 * d + 0.2 * perp;
+    vec2 a2   = p1 - 0.35 * d - 0.2 * perp;
+
+    uint base = 6u * uint(id.y * rejilla.x + id.x);
+    v[base + 0u] = vec4(p0, mag, 1.0);  v[base + 1u] = vec4(p1, mag, 1.0);
+    v[base + 2u] = vec4(p1, mag, 1.0);  v[base + 3u] = vec4(a1, mag, 1.0);
+    v[base + 4u] = vec4(p1, mag, 1.0);  v[base + 5u] = vec4(a2, mag, 1.0);
+}
